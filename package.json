@@ -7,6 +7,8 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "lint": "eslint .",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "test": "vitest run --passWithNoTests"
   },
   "repository": {
@@ -24,6 +26,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
     "eslint": "^10.15.0",
+    "prettier": "^3.10.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.73.0",
     "vitest": "^5.1.0"
