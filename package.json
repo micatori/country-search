@@ -16,5 +16,9 @@
   "bugs": {
     "url": "https://github.com/micatori/country-search/issues"
   },
-  "homepage": "https://github.com/micatori/country-search#readme"
+  "homepage": "https://github.com/micatori/country-search#readme",
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
 }
