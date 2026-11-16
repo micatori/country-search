@@ -1,0 +1,20 @@
+{
+  "name": "country-search",
+  "version": "1.0.0",
+  "description": "The countries search application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/micatori/country-search.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/micatori/country-search/issues"
+  },
+  "homepage": "https://github.com/micatori/country-search#readme"
+}
