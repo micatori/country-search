@@ -33,7 +33,7 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     // scop lib
-    "skipLibCheck": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
