@@ -11,20 +11,22 @@ export interface RawLanguage {
 }
 
 export interface RawCountry {
-  readonly name: string | { common?: string; official?: string };
-  readonly capital?: string | string[];
+  readonly name?: string | { readonly common?: string; readonly official?: string };
+  readonly capital?: string | readonly string[];
   readonly region?: string;
   readonly subregion?: string;
   readonly population?: number;
   readonly area?: number;
-  readonly languages?: RawLanguage[];
-  readonly currencies?: RawCurrency[];
-  readonly borders?: string[];
-  readonly callingCodes?: string[];
+  readonly languages?: readonly (RawLanguage | string)[];
+  readonly langs?: readonly string[];
+  readonly currencies?: readonly RawCurrency[];
+  readonly borders?: readonly string[];
+  readonly callingCodes?: readonly string[];
+  readonly topLevelDomain?: readonly string[];
   readonly flags?: { readonly svg?: string; readonly png?: string } | string;
   readonly flag?: string;
   readonly alpha2Code?: string;
   readonly alpha3Code?: string;
-  readonly translations?: Record<string, { readonly name?: string }>;
+  readonly translations?: Readonly<Record<string, { readonly name?: string }>>;
   readonly [key: string]: unknown;
 }
