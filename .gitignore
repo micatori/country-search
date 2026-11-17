@@ -2,3 +2,7 @@ node_modules/
 dist/
 coverage/
 .env
+.env.*
+.DS_Store
+*.log
+.husky/_/

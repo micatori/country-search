@@ -2,15 +2,18 @@
   "name": "country-search",
   "version": "1.0.0",
   "description": "The countries search application",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
-    "build": "npm run clean && tsc",
-    "watch": "tsc --watch",
+    "build": "npm run clean && tsc -p tsconfig.build.json && node -e \"const fs=require('node:fs');fs.mkdirSync('dist',{recursive:true});for(const f of ['index.html','styles.css'])fs.copyFileSync('src/'+f,'dist/'+f)\"",
+    "watch": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
     "prepare": "husky"
   },
   "lint-staged": {

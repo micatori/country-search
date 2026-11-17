@@ -1,8 +1,5 @@
 {
   "compilerOptions": {
-    // structure prj
-    "rootDir": "./src",
-    "outDir": "./dist",
     // vers js
     "target": "ES2022",
     "module": "ESNext",
@@ -11,8 +8,9 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": [],
     // import & compile
+    "noEmit": true,
     "sourceMap": true,
-    "noEmitOnError": true,
+
     "allowImportingTsExtensions": true,
     "rewriteRelativeImportExtensions": true,
     // types check
@@ -30,11 +28,11 @@
     // module
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
+    "noUncheckedSideEffectImports": true,
     // scop lib
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "coverage"]
 }

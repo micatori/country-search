@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', 'dist/**', 'coverage/**'],
+    ignores: ['node_modules/**', 'dist/**', 'coverage/**', '.husky/_/**', 'package-lock.json'],
   },
 
   eslint.configs.recommended,
@@ -14,6 +14,7 @@ export default tseslint.config(
     files: ['**/*.ts'],
 
     rules: {
+      'no-undef': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
 
       '@typescript-eslint/no-unused-vars': [
