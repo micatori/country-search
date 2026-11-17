@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Mock } from 'vitest';
 
 import { API_BASE_URL, DEFAULT_TIMEOUT_MS, buildSearchUrl, searchCountries } from '../../src/core/api.ts';
 import { HttpError, classifyFailure, isTimeoutError } from '../../src/core/errors.ts';
-import type { Mock } from 'vitest';
 
 type FetchStub = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -12,24 +12,23 @@ const jsonResponse = (body: unknown, status = 200): Response =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
 /**
- * A fetch stub that honours the given AbortSignal: it rejects with the signal reason
- * as soon as abort() is called. Without this the suite could not tell a real
- * cancellation apart from an ignored response.
+ * A fetch stub that honours the given AbortSignal: it rejects with the signal reason as soon
+ * as abort() is called. Without this the suite could not tell a real cancellation apart from
+ * an ignored response.
  */
 function hangingFetch(onSignal?: (signal: AbortSignal | null) => void): Mock<FetchStub> {
-  return vi.fn<FetchStub>(
-    (_input: string, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        const signal = init?.signal ?? null;
-        onSignal?.(signal);
+  return vi.fn<FetchStub>((_input: string, init?: RequestInit) => {
+    const signal = init?.signal ?? null;
+    onSignal?.(signal);
 
-        if (signal?.aborted) {
-          reject(signal.reason);
-          return;
-        }
-        signal?.addEventListener('abort', () => reject(signal.reason), { once: true });
-      }),
-  );
+    return new Promise<Response>((_resolve, reject) => {
+      if (signal?.aborted) {
+        reject(signal.reason);
+        return;
+      }
+      signal?.addEventListener('abort', () => reject(signal.reason), { once: true });
+    });
+  });
 }
 
 let fetchMock: Mock<FetchStub>;
@@ -77,9 +76,13 @@ describe('request shape', () => {
   });
 
   it('merges the caller signal with a timeout signal so both can cancel one request', async () => {
-    let seen: AbortSignal | null = null;
+    // An array, not `let seen: AbortSignal | null = null`: TS narrows the variable to null
+    // because the assignment happens inside a callback it cannot see.
+    const seenSignals: AbortSignal[] = [];
     fetchMock = hangingFetch((signal) => {
-      seen = signal;
+      if (signal !== null) {
+        seenSignals.push(signal);
+      }
     });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -87,8 +90,11 @@ describe('request shape', () => {
     const pending = searchCountries('spain', controller.signal);
     controller.abort();
 
-    await expect(pending).rejects.toThrow(/abort/i);
-    expect(seen?.aborted).toBe(true);
+    const error = await pending.catch((caught: unknown) => caught);
+
+    expect(classifyFailure(error, controller.signal)).toBe('aborted');
+    expect(seenSignals).toHaveLength(1);
+    expect(seenSignals.at(-1)?.aborted).toBe(true);
     expect(controller.signal.aborted).toBe(true);
   });
 
@@ -97,8 +103,11 @@ describe('request shape', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     const controller = new AbortController();
-    await searchCountries('spain', controller.signal, { timeoutMs: 5 }).catch(() => undefined);
+    const error = await searchCountries('spain', controller.signal, {
+      timeoutMs: 5,
+    }).catch((caught: unknown) => caught);
 
+    expect(isTimeoutError(error)).toBe(true);
     expect(controller.signal.aborted).toBe(false);
   });
 });
