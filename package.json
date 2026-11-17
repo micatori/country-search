@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
-    "build": "npm run clean && tsc -p tsconfig.build.json && node -e \"const fs=require('node:fs');fs.mkdirSync('dist',{recursive:true});for(const f of ['index.html','styles.css'])fs.copyFileSync('src/'+f,'dist/'+f)\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json && node -e \"const fs=require('node:fs');fs.mkdirSync('dist',{recursive:true});for(const f of ['index.html','styles.css'])if(fs.existsSync(f))fs.copyFileSync(f,'dist/'+f)\"",
     "watch": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
