@@ -1,0 +1,173 @@
+/* ---------- design tokens ---------- */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f5f6fa;
+  --surface: #ffffff;
+  --surface-alt: #eef0f6;
+  --border: #d7dbe7;
+  --text: #16192b;
+  --muted: #5c6279;
+  --accent: #2f6df6;
+  --accent-contrast: #ffffff;
+  --danger-bg: #fdecec;
+  --danger-border: #e4a1a1;
+  --danger-text: #8c1c1c;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --space: 16px;
+  --space-sm: 8px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 8%), 0 4px 12px rgb(0 0 0 / 6%);
+  --max-width: 960px;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12141c;
+    --surface: #1b1f2a;
+    --surface-alt: #232838;
+    --border: #333a4d;
+    --text: #eef0f6;
+    --muted: #a3aac0;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 12px rgb(0 0 0 / 30%);
+  }
+}
+
+/* ---------- reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: var(--space);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) 12px;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:where(input, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- shell ---------- */
+.app {
+  display: grid;
+  gap: var(--space);
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.app__title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.app__hint {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.search {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.search__field {
+  flex: 1;
+  padding: 12px 14px;
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.search__field::placeholder {
+  color: var(--muted);
+}
+
+.search__clear {
+  flex: none;
+}
+
+.app__panel {
+  padding: var(--space);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- status line ---------- */
+.status {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  min-height: 24px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ---------- a11y ---------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: var(--space-sm);
+  }
+
+  .app__title {
+    font-size: 20px;
+  }
+}
