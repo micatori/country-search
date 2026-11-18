@@ -314,6 +314,113 @@ button:disabled {
   text-align: right;
   overflow-wrap: anywhere;
 }
+/* ---------- selectable cards ---------- */
+.card--selectable {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card--selectable:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.card--selectable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.card[aria-expanded='true'] {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- detail panel ---------- */
+.detail__card {
+  display: grid;
+  gap: var(--space);
+}
+
+.detail__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space);
+  align-items: center;
+}
+
+.detail__titles {
+  display: grid;
+  gap: 2px;
+}
+
+.detail__title {
+  font-size: 20px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.detail__subtitle {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.detail__close {
+  flex: none;
+  align-self: start;
+}
+
+.detail__grid {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.detail__row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space);
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.detail__row:last-child {
+  border-bottom: 0;
+}
+
+.detail__label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detail__value {
+  margin: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.detail__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.chip {
+  padding: 2px 10px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.detail__source {
+  color: var(--muted);
+  font-size: 12px;
+}
 /* ---------- a11y ---------- */
 .visually-hidden {
   position: absolute;
@@ -340,5 +447,22 @@ button:disabled {
   }
   .results {
     grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 860px) {
+  .detail__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space);
+  }
+}
+
+@media (max-width: 420px) {
+  .detail__row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .detail__value {
+    text-align: left;
   }
 }

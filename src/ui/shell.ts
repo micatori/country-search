@@ -3,17 +3,19 @@ import { createElement, toggleHidden } from './dom.ts';
 export const SEARCH_INPUT_ID = 'search-input';
 export const SEARCH_RESULTS_ID = 'search-results';
 export const SEARCH_STATUS_ID = 'search-status';
+export const SEARCH_DETAIL_ID = 'search-detail';
 
-/** Named nodes of the static skeleton. Later commits add the containers they own. */
+/** Named nodes of the static skeleton. Every later UI module renders into one of these. */
 export interface AppShell {
   readonly root: HTMLElement;
   readonly form: HTMLFormElement;
   readonly searchInput: HTMLInputElement;
   readonly clearButton: HTMLButtonElement;
   readonly status: HTMLElement;
+  readonly feedback: HTMLElement;
+  readonly detail: HTMLElement;
   readonly resultsPanel: HTMLElement;
   readonly results: HTMLUListElement;
-  readonly feedback: HTMLElement;
 }
 
 /**
@@ -56,16 +58,21 @@ export function mountShell(mountPoint: HTMLElement = document.body): AppShell {
     attributes: { 'aria-live': 'polite', for: SEARCH_INPUT_ID },
   });
 
+  const feedback = createElement('div', { class: 'feedback' });
+
+  const detail = createElement('section', {
+    id: SEARCH_DETAIL_ID,
+    class: 'detail app__panel',
+    attributes: { 'aria-label': 'Country details', hidden: '' },
+  });
+
   const results = createElement('ul', {
     id: SEARCH_RESULTS_ID,
     class: 'results',
     attributes: { 'aria-live': 'polite', 'aria-label': 'Search results' },
   });
 
-  const feedback = createElement('div', { class: 'feedback' });
-
-  const resultsPanel = createElement('section', { class: 'app__panel' });
-  resultsPanel.appendChild(results);
+  const resultsPanel = createElement('section', { class: 'app__panel', children: [results] });
   toggleHidden(resultsPanel, true);
 
   const root = createElement('div', {
@@ -79,11 +86,12 @@ export function mountShell(mountPoint: HTMLElement = document.body): AppShell {
       form,
       status,
       feedback,
+      detail,
       resultsPanel,
     ],
   });
 
   mountPoint.replaceChildren(root);
 
-  return { root, form, searchInput, clearButton, status, resultsPanel, results, feedback };
+  return { root, form, searchInput, clearButton, status, feedback, detail, resultsPanel, results };
 }
