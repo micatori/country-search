@@ -1,15 +1,19 @@
 import { createSearchController } from './core/searchController.ts';
 import type { SearchState } from './core/searchController.ts';
+import { createSearchHistory } from './core/history.ts';
 import type { CountryView } from './core/mapping.ts';
 import { attachCardActivation, renderCountryList } from './ui/countryCard.ts';
 import { renderDetail } from './ui/detailView.ts';
 import { toggleHidden } from './ui/dom.ts';
+import { attachHistoryActivation, renderHistoryList } from './ui/historyList.ts';
 import { buildSpinner, describeSearchState, renderSearchStatus } from './ui/searchStatus.ts';
 import { mountShell } from './ui/shell.ts';
 
 const shell = mountShell();
+const history = createSearchHistory();
 
 const controller = createSearchController({
+  history,
   onStateChange: (state) => {
     render(state);
   },
@@ -34,6 +38,7 @@ function render(state: SearchState): void {
   renderSearchStatus(shell.feedback, state, () => {
     controller.retry();
   });
+  renderHistory();
 }
 
 function renderStatus(state: SearchState): void {
@@ -102,6 +107,18 @@ function closeDetail(): void {
   }
 }
 
+/**
+ * The history module is written to only by the controller (on every completed lookup) and by the
+ * Clear button below. Reading goes through the controller, so the view has a single source for
+ * "what has been searched".
+ */
+function renderHistory(): void {
+  const queries = controller.historyList();
+
+  toggleHidden(shell.historyPanel, queries.length === 0);
+  renderHistoryList(shell.historyItems, queries);
+}
+
 shell.searchInput.addEventListener('input', () => {
   controller.handleInput(shell.searchInput.value);
 });
@@ -119,6 +136,20 @@ shell.clearButton.addEventListener('click', () => {
 });
 
 attachCardActivation(shell.results, openDetail);
+
+// A saved query is replayed immediately: submit() bypasses the debounce and the cache answers
+// synchronously when the entry is still there. After a reload the entry is gone, and the same
+// click simply goes to the network with the normal loading indicator.
+attachHistoryActivation(shell.historyItems, (query) => {
+  shell.searchInput.value = query;
+  controller.submit(query);
+  shell.searchInput.focus();
+});
+
+shell.historyClearButton.addEventListener('click', () => {
+  history.clear();
+  renderHistory();
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && selectedCountry !== null) {

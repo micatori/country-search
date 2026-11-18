@@ -14,6 +14,9 @@ export interface AppShell {
   readonly status: HTMLElement;
   readonly feedback: HTMLElement;
   readonly detail: HTMLElement;
+  readonly historyPanel: HTMLElement;
+  readonly historyClearButton: HTMLButtonElement;
+  readonly historyItems: HTMLUListElement;
   readonly resultsPanel: HTMLElement;
   readonly results: HTMLUListElement;
 }
@@ -66,6 +69,30 @@ export function mountShell(mountPoint: HTMLElement = document.body): AppShell {
     attributes: { 'aria-label': 'Country details', hidden: '' },
   });
 
+  const historyClearButton = createElement('button', {
+    class: 'history__clear',
+    text: 'Clear',
+    attributes: { type: 'button', 'aria-label': 'Clear the search history' },
+  });
+
+  const historyItems = createElement('ul', {
+    class: 'history__items',
+    attributes: { 'aria-label': 'Recent searches' },
+  });
+
+  const historyPanel = createElement('section', {
+    class: 'app__panel history',
+    attributes: { 'aria-label': 'Recent searches', hidden: '' },
+    children: [
+      createElement('div', {
+        class: 'history__head',
+        children: [createElement('h2', { class: 'history__title', text: 'Recent searches' }), historyClearButton],
+      }),
+      historyItems,
+    ],
+  });
+  toggleHidden(historyPanel, true);
+
   const results = createElement('ul', {
     id: SEARCH_RESULTS_ID,
     class: 'results',
@@ -88,10 +115,24 @@ export function mountShell(mountPoint: HTMLElement = document.body): AppShell {
       feedback,
       detail,
       resultsPanel,
+      historyPanel,
     ],
   });
 
   mountPoint.replaceChildren(root);
 
-  return { root, form, searchInput, clearButton, status, feedback, detail, resultsPanel, results };
+  return {
+    root,
+    form,
+    searchInput,
+    clearButton,
+    status,
+    feedback,
+    detail,
+    historyPanel,
+    historyClearButton,
+    historyItems,
+    resultsPanel,
+    results,
+  };
 }
