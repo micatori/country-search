@@ -12,6 +12,7 @@ export type SearchStatus = 'idle' | 'loading' | 'empty' | 'success' | 'error';
 
 export interface SearchFailure {
   readonly kind: FailureKind;
+  readonly query: string;
   readonly message: string;
 }
 
@@ -157,7 +158,7 @@ export function createSearchController(options: SearchControllerOptions = {}): S
           query: trimmedQuery,
           status: 'error',
           results: [],
-          failure: { kind, message: error instanceof Error ? error.message : String(error) },
+          failure: { kind, query: trimmedQuery, message: error instanceof Error ? error.message : String(error) },
         });
       })
       .finally(() => {

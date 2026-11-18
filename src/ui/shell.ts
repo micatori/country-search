@@ -1,4 +1,4 @@
-import { createElement } from './dom.ts';
+import { createElement, toggleHidden } from './dom.ts';
 
 export const SEARCH_INPUT_ID = 'search-input';
 export const SEARCH_RESULTS_ID = 'search-results';
@@ -11,6 +11,7 @@ export interface AppShell {
   readonly searchInput: HTMLInputElement;
   readonly clearButton: HTMLButtonElement;
   readonly status: HTMLElement;
+  readonly resultsPanel: HTMLElement;
   readonly results: HTMLUListElement;
   readonly feedback: HTMLElement;
 }
@@ -63,6 +64,10 @@ export function mountShell(mountPoint: HTMLElement = document.body): AppShell {
 
   const feedback = createElement('div', { class: 'feedback' });
 
+  const resultsPanel = createElement('section', { class: 'app__panel' });
+  resultsPanel.appendChild(results);
+  toggleHidden(resultsPanel, true);
+
   const root = createElement('div', {
     class: 'app',
     children: [
@@ -74,11 +79,11 @@ export function mountShell(mountPoint: HTMLElement = document.body): AppShell {
       form,
       status,
       feedback,
-      createElement('section', { class: 'app__panel', children: [results] }),
+      resultsPanel,
     ],
   });
 
   mountPoint.replaceChildren(root);
 
-  return { root, form, searchInput, clearButton, status, results, feedback };
+  return { root, form, searchInput, clearButton, status, resultsPanel, results, feedback };
 }

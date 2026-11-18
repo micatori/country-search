@@ -1,40 +1,38 @@
 import { createSearchController } from './core/searchController.ts';
 import type { SearchState } from './core/searchController.ts';
 import { mountShell } from './ui/shell.ts';
+import { buildSpinner, describeSearchState, renderSearchStatus } from './ui/searchStatus.ts';
 import { toggleHidden } from './ui/dom.ts';
 
 const shell = mountShell();
 
 const controller = createSearchController({
   onStateChange: (state) => {
-    renderStatus(state);
+    render(state);
   },
 });
 
-function renderStatus(state: SearchState): void {
-  const trimmedQuery = state.query.trim();
-
-  shell.searchInput.setAttribute('aria-busy', state.status === 'loading' ? 'true' : 'false');
-  toggleHidden(shell.clearButton, trimmedQuery === '');
-  shell.status.textContent = describeState(state);
+function render(state: SearchState): void {
+  renderStatus(state);
+  // onRetry is a callback, so this module never needs the controller beyond wiring
+  renderSearchStatus(shell.feedback, state, () => {
+    controller.retry();
+  });
 }
 
-function describeState(state: SearchState): string {
-  if (state.query.trim() === '') {
-    return 'Start typing a country name';
-  }
+function renderStatus(state: SearchState): void {
+  const trimmedQuery = state.query.trim();
+  const isLoading = state.status === 'loading';
 
-  switch (state.status) {
-    case 'loading':
-      return 'Searching…';
-    case 'error':
-      return 'Search failed';
-    case 'empty':
-      return 'No countries found';
-    default: {
-      const count = state.results.length;
-      return `${count} ${count === 1 ? 'result' : 'results'}`;
-    }
+  shell.searchInput.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+  toggleHidden(shell.clearButton, trimmedQuery === '');
+  toggleHidden(shell.resultsPanel, state.results.length === 0);
+
+  // assigning textContent removes the previous children — including an earlier spinner —
+  // so exactly one indicator can exist at a time
+  shell.status.textContent = describeSearchState(state);
+  if (isLoading) {
+    shell.status.appendChild(buildSpinner());
   }
 }
 
@@ -54,4 +52,4 @@ shell.clearButton.addEventListener('click', () => {
   shell.searchInput.focus();
 });
 
-renderStatus(controller.state);
+render(controller.state);

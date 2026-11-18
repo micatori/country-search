@@ -148,7 +148,97 @@ button:disabled {
   color: var(--muted);
   font-size: 14px;
 }
+/* ---------- spinner ---------- */
+.status__spinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status__spinner {
+    animation-duration: 1.4s;
+  }
+}
+
+/* ---------- feedback: empty result vs real error ---------- */
+.feedback {
+  display: grid;
+}
+
+.feedback:empty {
+  display: none;
+}
+
+.feedback__card {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.feedback__card--empty {
+  color: var(--muted);
+}
+
+.feedback__card--error {
+  color: var(--danger-text);
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+}
+
+.feedback__title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.feedback__card--error .feedback__title {
+  color: var(--danger-text);
+}
+
+.feedback__hint {
+  font-size: 14px;
+}
+
+.feedback__retry {
+  justify-self: start;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.feedback__retry:hover {
+  filter: brightness(1.08);
+}
+
+.feedback__details {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.feedback__code {
+  display: block;
+  margin-top: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
 /* ---------- a11y ---------- */
 .visually-hidden {
   position: absolute;
@@ -169,5 +259,8 @@ button:disabled {
 
   .app__title {
     font-size: 20px;
+  }
+  .feedback__retry {
+    justify-self: stretch;
   }
 }
