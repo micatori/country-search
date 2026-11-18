@@ -3,6 +3,7 @@ import type { SearchState } from './core/searchController.ts';
 import { mountShell } from './ui/shell.ts';
 import { buildSpinner, describeSearchState, renderSearchStatus } from './ui/searchStatus.ts';
 import { toggleHidden } from './ui/dom.ts';
+import { renderCountryList } from './ui/countryCard.ts';
 
 const shell = mountShell();
 
@@ -14,7 +15,7 @@ const controller = createSearchController({
 
 function render(state: SearchState): void {
   renderStatus(state);
-  // onRetry is a callback, so this module never needs the controller beyond wiring
+  renderCountryList(shell.results, state.results);
   renderSearchStatus(shell.feedback, state, () => {
     controller.retry();
   });
