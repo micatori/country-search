@@ -1,8 +1,10 @@
-import { searchCountries } from './api.ts';
-import type { SearchOptions } from './api.ts';
 import { SEARCH_DEBOUNCE_MS, debounce } from './debounce.ts';
 import { classifyFailure } from './errors.ts';
 import type { FailureKind } from './errors.ts';
+import { createSearchCache } from './cache.ts';
+import type { SearchCache } from './cache.ts';
+import type { SearchHistory } from './history.ts';
+import type { SearchOptions } from './api.ts';
 import { mapCountryResponses } from './mapping.ts';
 import type { CountryView } from './mapping.ts';
 
@@ -24,6 +26,8 @@ export interface SearchControllerOptions {
   readonly debounceMs?: number;
   readonly timeoutMs?: number;
   readonly baseUrl?: string;
+  readonly cache?: SearchCache;
+  readonly history?: SearchHistory;
   readonly onStateChange?: (state: SearchState) => void;
 }
 
@@ -34,6 +38,8 @@ export interface SearchController {
   retry(): void;
   clear(): void;
   destroy(): void;
+  cacheStats(): ReturnType<SearchCache['stats']>;
+  historyList(): readonly string[];
 }
 
 export const IDLE_SEARCH_STATE: SearchState = {
@@ -50,11 +56,18 @@ interface ActiveRequest {
 
 /**
  * Owns the whole search lifecycle — debounce, one in-flight AbortController, timeout,
- * loading/empty/error/success states. Deliberately DOM-free, which is what makes the stale
- * response race testable without a browser.
+ * cache/dedup, history and the loading/empty/error/success states. Deliberately DOM-free,
+ * which is what makes the stale response race testable without a browser.
  */
 export function createSearchController(options: SearchControllerOptions = {}): SearchController {
-  const { debounceMs = SEARCH_DEBOUNCE_MS, timeoutMs, baseUrl, onStateChange } = options;
+  const {
+    debounceMs = SEARCH_DEBOUNCE_MS,
+    timeoutMs,
+    baseUrl,
+    cache = createSearchCache(),
+    history,
+    onStateChange,
+  } = options;
 
   let state: SearchState = IDLE_SEARCH_STATE;
   let activeRequest: ActiveRequest | undefined;
@@ -73,8 +86,7 @@ export function createSearchController(options: SearchControllerOptions = {}): S
    * AbortController.abort(); this guard only closes the window where the response already
    * settled before abort() ran and its .then continuation is still queued in the microtask queue.
    */
-  const isSuperseded = (candidate: ActiveRequest): boolean =>
-    candidate !== activeRequest || candidate.requestId !== session;
+  const isSuperseded = (requestId: number): boolean => requestId !== session;
 
   function cancelActiveRequest(): void {
     activeRequest?.controller.abort();
@@ -92,9 +104,33 @@ export function createSearchController(options: SearchControllerOptions = {}): S
     };
   }
 
+  function publishResults(requestId: number, query: string, payload: readonly unknown[]): void {
+    if (isSuperseded(requestId)) {
+      return;
+    }
+
+    // Recorded only when the lookup actually answered: "no matches" is a real search result,
+    // while failures and user cancellations are not something to repeat from history.
+    history?.push(query);
+
+    const results = mapCountryResponses(payload);
+    publish({
+      query,
+      status: results.length === 0 ? 'empty' : 'success',
+      results,
+      failure: null,
+    });
+  }
+
   function run(query: string, requestId: number): void {
     const trimmedQuery = query.trim();
-    if (trimmedQuery === '' || requestId !== session) {
+    if (trimmedQuery === '' || isSuperseded(requestId)) {
+      return;
+    }
+
+    const cached = cache.peek(trimmedQuery);
+    if (cached !== undefined) {
+      publishResults(requestId, trimmedQuery, cached);
       return;
     }
 
@@ -104,25 +140,17 @@ export function createSearchController(options: SearchControllerOptions = {}): S
     activeRequest = request;
     publish({ query: trimmedQuery, status: 'loading', results: [], failure: null });
 
-    searchCountries(trimmedQuery, request.controller.signal, buildSearchOptions())
+    cache
+      .fetch(trimmedQuery, request.controller.signal, buildSearchOptions())
       .then((payload) => {
-        if (isSuperseded(request)) {
-          return;
-        }
-        const results = mapCountryResponses(payload);
-        publish({
-          query: trimmedQuery,
-          status: results.length === 0 ? 'empty' : 'success',
-          results,
-          failure: null,
-        });
+        publishResults(requestId, trimmedQuery, payload);
       })
       .catch((error: unknown) => {
         const kind = classifyFailure(error, request.controller.signal);
         if (kind === 'aborted') {
           return; // our own cancellation: silent, never shown as an error
         }
-        if (isSuperseded(request)) {
+        if (isSuperseded(requestId)) {
           return;
         }
         publish({
@@ -154,6 +182,11 @@ export function createSearchController(options: SearchControllerOptions = {}): S
     debouncedRun(query, session);
   }
 
+  /**
+   * Immediate search without waiting for the debounce — used by Enter, by "Retry" and by a
+   * history click. A cached entry resolves synchronously, which is why clicking a saved query
+   * feels instant; an entry evicted after a reload simply goes back to the network.
+   */
   function submit(query: string = state.query): void {
     session += 1;
     debouncedRun.cancel();
@@ -178,6 +211,12 @@ export function createSearchController(options: SearchControllerOptions = {}): S
       session += 1;
       cancelActiveRequest();
       debouncedRun.cancel();
+    },
+    cacheStats(): ReturnType<SearchCache['stats']> {
+      return cache.stats();
+    },
+    historyList(): readonly string[] {
+      return history?.list() ?? [];
     },
   };
 }
